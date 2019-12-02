@@ -1,0 +1,135 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="renderer" content="webkit|ie-comp|ie-stand">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+    <meta http-equiv="Cache-Control" content="no-siteapp" />
+    <!--[if lt IE 9]>
+    <script type="text/javascript" src="../hui/lib/html5shiv.js"></script>
+    <script type="text/javascript" src="../hui/lib/respond.min.js"></script>
+    <![endif]-->
+    <link rel="stylesheet" type="text/css" href="../hui/static/h-ui/css/H-ui.min.css" />
+    <link rel="stylesheet" type="text/css" href="../hui/static/h-ui.admin/css/H-ui.admin.css" />
+    <link rel="stylesheet" type="text/css" href="../hui/lib/Hui-iconfont/1.0.8/iconfont.css" />
+    <link rel="stylesheet" type="text/css" href="../hui/static/h-ui.admin/skin/default/skin.css" id="skin" />
+    <link rel="stylesheet" type="text/css" href="../hui/static/h-ui.admin/css/style.css" />
+    <!--[if IE 6]>
+    <script type="text/javascript" src="../hui/lib/DD_belatedPNG_0.0.8a-min.js" ></script>
+    <script>DD_belatedPNG.fix('*');</script>
+    <![endif]-->
+    <title>权限添加</title>
+</head>
+<body>
+<div class="panel panel-default">
+    <form action="#" method="post" class="form form-horizontal responsive" id="myf">
+        <div class="row cl">
+            <label class="form-label col-xs-3">权限名称：</label>
+            <div class="formControls col-xs-5">
+                <input type="text" class="input-text" autocomplete="off" placeholder="权限名称" name="name" id="name">
+            </div>
+        </div>
+        <div class="row cl">
+            <label class="form-label col-xs-3">功能描述：</label>
+            <div class="formControls col-xs-5">
+                <input type="text" class="input-text" autocomplete="off" placeholder="功能描述" name="percode" id="percode">
+            </div>
+        </div>
+        <div class="row cl">
+            <label class="form-label col-xs-3">权限联系：</label>
+            <div class="formControls col-xs-5">
+                   <span class="select-box">
+					<select class="select" size="1" name="parentid" id="parent">
+                    </select>
+                   </span>
+            </div>
+        </div>
+        <div class="row cl">
+            <label class="form-label col-xs-3">权限地址：</label>
+            <div class="formControls col-xs-5">
+                <input type="text" class="input-text" autocomplete="off" placeholder="权限地址" name="url" id="url">
+            </div>
+        </div>
+
+        <div class="row cl">
+            <label class="form-label col-xs-3">权限状态：</label>
+            <div class="formControls skin-minimal col-xs-5">
+                <div class="radio-box">
+                    <input type="radio" id="sex-1" value="1" name="available" checked="checked">
+                    <label for="sex-1">开启</label>
+                </div>
+                <div class="radio-box">
+                    <input type="radio" id="sex-2" value="0" name="available">
+                    <label for="sex-2">关闭</label>
+                </div>
+            </div>
+        </div>
+        <div class="row cl">
+            <div class="col-xs-5 col-xs-offset-3">
+                <input class="btn btn-primary" type="button" id="sub" value="&nbsp;&nbsp;提交&nbsp;&nbsp;">
+            </div>
+        </div>
+    </form>
+</div>
+</body>
+</html>
+<script type="text/javascript" src="../hui/lib/jquery/1.9.1/jquery.min.js"></script>
+<script type="text/javascript" src="../hui/lib/layer/2.4/layer.js"></script>
+<script type="text/javascript" src="../hui/static/h-ui/js/H-ui.min.js"></script>
+<script type="text/javascript" src="../hui/static/h-ui.admin/js/H-ui.admin.js"></script> <!--/_footer 作为公共模版分离出去-->
+
+<!--请在下方写此页面业务相关的脚本-->
+<script type="text/javascript" src="../hui/lib/datatables/1.10.0/jquery.dataTables.min.js"></script>
+<script type="text/javascript">
+$(function () {
+    parentSelect();
+    $("#sub").click(function () {
+        var arr = $("#myf").serializeArray();
+        var data={};
+        $.each(arr,function (i,item) {
+            data[item.name]=item.value;
+        });
+        console.log(data);
+        $.ajax({
+            url:'../authority/authority-permission-add.do',
+            data:JSON.stringify(data),
+            type:'POST',
+            dataType: 'json',
+            contentType:'application/json',
+            success:function (result,textStatus) {
+                console.log(textStatus);
+                if (result>0){
+                    layer.msg('添加成功...',{icon:1,time:2000});
+                    parent.location.replace(parent.location.href)
+                }
+            },
+            error:function () {
+                layer.msg('添加失败...',{icon:1,time:2000});
+                parent.location.replace(parent.location.href)
+            }
+        });
+
+    })
+})
+function parentSelect() {
+    $.ajax({
+        url: '../authority/getsyspermission.do',
+        type: 'POST',
+        data:{"page":1,"rows":100,"permission_name":""},
+        dataType: 'json',
+        success: function(data) {
+            console.log("log"+data);
+            var option="";
+            $.each(data.list, function (i,item) {
+                option+='<option value="'+item.id+'">'+item.name+'</option>'
+            });
+            $("#parent").append(option);
+        },
+        error: function() {
+            layer.msg('数据加载失败...',{icon:1,time:2000});
+        }
+    })
+
+}
+</script>

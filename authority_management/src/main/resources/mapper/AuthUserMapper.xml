@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zy.dao.AuthUserDao">
+	
+	<select id="getAuthUser" parameterType="AuthUser" resultType="AuthUser">
+		SELECT * FROM sys_user where usercode = #{usercode} and password = #{password}
+	</select>
+	
+	<select id="getAuthUserFunction" parameterType="AuthUser" resultType="Map">
+		SELECT usercode, url FROM sys_user, sys_user_role, sys_role_permission, sys_permission
+        WHERE sys_user.id = sys_user_role.sys_user_id
+        AND sys_user_role.sys_role_id = sys_role_permission.sys_role_id
+        AND sys_role_permission.sys_permission_id = sys_permission.id
+        AND usercode = #{usercode}
+	</select>
+	<select id="getUserRole" resultType="AuthUser" parameterType="String">
+		SELECT sys_user.id as id,sys_user.username as username,`name` as type,sys_role.id as typeid
+		from sys_user   left join sys_user_role   on
+		sys_user.id=sys_user_role.sys_user_id left join sys_role  on
+		sys_user_role.sys_role_id=sys_role.id
+			<if test="id != null and id != ''">
+				where sys_user.id= #{id,jdbcType=VARCHAR}
+			</if>
+	</select>
+	<insert id="addUser" parameterType="AuthUser">
+		insert into sys_user( usercode, username, password, salt, locked)
+		values (#{username,jdbcType=VARCHAR},#{username,jdbcType=VARCHAR} ,
+		        #{password,jdbcType=VARCHAR} ,'qwe','1');
+
+	</insert>
+	<delete id="deleteUserByUserId">
+		delete from sys_user where id=#{id,jdbcType=VARCHAR}
+	</delete>
+	<delete id="deleteUserRoleByUserId">
+		delete from sys_user_role sur where sys_user_id = #{id,jdbcType=VARCHAR}
+	</delete>
+	<update id="editUser" parameterType="AuthUser">
+		update sys_user
+		<set>
+			<if test="username != null and username != ''">
+				username=#{username,jdbcType=VARCHAR} ,
+			</if>
+			<if test="usercode != null and usercode != ''">
+				usercode=#{usercode,jdbcType=VARCHAR},
+			</if>
+			<if test="salt != null and salt != ''">
+				salt=#{salt,jdbcType=VARCHAR},
+			</if>
+			<if test="locked != null and locked != ''">
+				locked=#{locked,jdbcType=VARCHAR},
+			</if>
+		</set>
+		<where>
+			id=#{id,jdbcType=VARCHAR}
+		</where>
+	</update>
+	<insert id="addUserRole" parameterType="AuthUser">
+		insert into sys_user_role  (sys_role_id,sys_user_id) values (
+		     #{typeid,jdbcType=VARCHAR} ,#{id}
+																	)
+	</insert>
+	<update id="editUserRole" parameterType="AuthUser">
+		update sys_user_role
+		<set>
+			<if test="typeid != null">
+				sys_role_id=#{typeid}
+			</if>
+		</set>
+		<where>
+			sys_user_id=#{id}
+		</where>
+	</update>
+	<select id="selectByName" resultType="AuthUser">
+		select * from sys_user where usercode=#{username,jdbcType=VARCHAR}
+	</select>
+</mapper>

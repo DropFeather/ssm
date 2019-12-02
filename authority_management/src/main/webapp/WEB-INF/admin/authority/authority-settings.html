@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<link rel="stylesheet" type="text/css" href="../hui/static/h-ui/css/H-ui.min.css" />
+<link rel="stylesheet" type="text/css" href="../hui/static/h-ui.admin/css/H-ui.admin.css" />
+<link rel="stylesheet" type="text/css" href="../hui/lib/Hui-iconfont/1.0.8/iconfont.css" />
+<link rel="stylesheet" type="text/css" href="../hui/static/h-ui.admin/skin/default/skin.css" id="skin" />
+<link rel="stylesheet" type="text/css" href="../hui/static/h-ui.admin/css/style.css" />
+
+<link rel="stylesheet" href="../ztree/css/demo.css" type="text/css">
+<link rel="stylesheet" href="../ztree/css/zTreeStyle/zTreeStyle.css" type="text/css">
+<script type="text/javascript" src="../hui/lib/jquery/1.9.1/jquery.min.js"></script>
+<script type="text/javascript" src="../ztree/js/jquery.ztree.core.js"></script>
+<script type="text/javascript" src="../ztree/js/jquery.ztree.excheck.js"></script>
+
+<script type="text/javascript" src="../hui/lib/layer/2.4/layer.js"></script>
+<script type="text/javascript" src="../hui/static/h-ui/js/H-ui.min.js"></script>
+<script type="text/javascript" src="../hui/static/h-ui.admin/js/H-ui.admin.js"></script> <!--/_footer 作为公共模版分离出去-->
+
+    <style>
+        .page-settings {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+    </style>
+
+<script type="text/javascript">
+	// zTree属性设置 setting
+	var setting = {
+		data: {
+			simpleData: {
+				enable: true,
+				idKey: 'id',
+				pIdKey: 'pId',
+				rootId: 0
+			}
+		},
+		check: {
+			enable: true // 除了设置此属性，还要导入jquery.ztree.excheck.js
+		}
+	}
+	
+	// 加载权限树
+	function initZTree() {
+		$.ajax({
+			url: '../authority/getsyspermissiontree.do',
+			dataType: 'json',
+			type: 'GET',
+			success: function(data) {
+				var zTreeObj = $.fn.zTree.init($("#ztreedemo"), setting, data);
+				zTreeObj.expandAll(true); // 展开全部的节点
+			}
+		});
+	}
+	
+	// 加载角色数据
+	function initRole() {
+		$.ajax({
+			url: '../authority/getsysrole.do',
+			type: 'GET',
+			dataType: 'json',
+			success: function(data) {
+				$.each(data, function(i, v) {
+                    var row = $("#template").clone(true); // 克隆模板，同时注意事件监听失效
+                    for(attr in v) {
+                        row.find("#" + attr).html(v[attr]); // 数据的复制
+                    }
+                    $("#table-role > tbody").append(row); // 将数据添加到表格里面
+                });
+                $("#table-role > tbody > tr:eq(0)").remove(); // 删除模板
+			},
+			error: function() {
+				 layer.msg('数据加载失败...', {icon:1,time:2000});
+			}
+		});
+	}
+	
+	// 角色权限值的查看
+	function admin_role_query(obj) {
+		var role_id = $(obj).parents(".text-c").find("#id").text(); // 查找角色的ID
+		var zTreeObj = $.fn.zTree.getZTreeObj("ztreedemo"); // 获取权限数的对象  <ul id="ztreedemo"></ul>
+		var nodes = zTreeObj.transformToArray(zTreeObj.getNodes()); // 获取全部节点，将节点转换为数组
+		
+		$.ajax({
+			url: '../authority/getsyspermissiontreebyroleid.do',
+			type: 'GET',
+			data: {'role_id': role_id},
+			dataType: 'json',
+			success: function(data) { // 此data就带有checked属性
+				if(data && nodes && data.length > 0 && nodes.length > 0) {
+					zTreeObj.removeChildNodes(nodes[0]); // 删除原来的权限树，删除根节点
+					zTreeObj.updateNode(nodes[0], true); // 删除权限后记得进行更新操作
+					zTreeObj = $.fn.zTree.init($("#ztreedemo"), setting, data); //加载新的数据
+					zTreeObj.expandAll(true); // 展开全部的节点
+				}
+			}
+		})
+	}
+	
+	// 权限分配：给对应角色分配权限
+	function admin_role_settings(obj) {
+		var zTreeObj = $.fn.zTree.getZTreeObj("ztreedemo");
+		var nodes = zTreeObj.getCheckedNodes(true);
+		
+		if(nodes.length == 0) {
+			 layer.msg('你还未选中要分配的权限...', {icon:1,time:3000});
+			 return;
+		}
+		var ids = [];
+		for(var i = 0; i < nodes.length; i++) {
+			ids.push(nodes[i].id);
+		}
+		var role_id = $(obj).parents(".text-c").find("#id").text();
+		console.log(ids.join(','));
+		console.log(role_id);
+		
+		// 提交需要更新的权限数据
+		$.ajax({
+			url: '../authority/updatepermissionbyroleid.do',
+			type: 'POST',
+			dataType: 'json',
+			data: {'role_id':role_id, 'permission_ids': ids.join(',')},
+			success: function(data) {
+				if (data>0){
+                    layer.msg('权限分配成功...', {icon:1,time:3000})
+                }
+			},
+			error: function() {
+				layer.msg('权限分配失败...', {icon:1,time:3000})
+			}
+		});
+	}
+	$(function() {
+		initZTree(); // 执行加载权限树的数据
+		initRole(); // 加载角色数据
+	});
+</script>
+
+</head>
+<body>
+    <nav class="breadcrumb"><i class="Hui-iconfont">&#xe67f;</i> 首页 <span class="c-gray en">&gt;</span> 管理员管理 <span class="c-gray en">&gt;</span> 权限分配 <a class="btn btn-success radius r" style="line-height:1.6em;margin-top:3px" href="javascript:location.replace(location.href);" title="刷新" ><i class="Hui-iconfont">&#xe68f;</i></a></nav>
+    <div class="page-container">
+        <div class="page-settings">
+            <ul id="ztreedemo" class="ztree"></ul>
+            <ul class="ztree" style="width: 80%;">
+                <table class="table table-border table-bordered table-hover table-bg" id="table-role">
+                    <thead>
+                    <tr>
+                        <th scope="col" colspan="6">角色管理</th>
+                    </tr>
+                    <tr class="text-c">
+                        <th >角色编号</th>
+                        <th >角色名称</th>
+                        <th >角色描述</th>
+                        <th >角色操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <!--数据模板-->
+                    <!--其中td中id=xx就是对应实体类里面的属性-->
+                    <tr class="text-c" id="template">
+                        <td id="id">1</td>
+                        <td id="name">超级管理员</td>
+                        <td id="content">拥有至高无上的权利</td>
+                        <td class="f-14"><a title="查看" href="javascript:;" onclick="admin_role_query(this)" style="text-decoration:none">查看</a> <a title="分配" href="javascript:;" onclick="admin_role_settings(this)" class="ml-5" style="text-decoration:none">分配</a></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

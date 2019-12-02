@@ -1,0 +1,196 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="renderer" content="webkit|ie-comp|ie-stand">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+<!--[if lt IE 9]>
+<script type="text/javascript" src="../hui/lib/html5shiv.js"></script>
+<script type="text/javascript" src="../hui/lib/respond.min.js"></script>
+<![endif]-->
+<link rel="stylesheet" type="text/css" href="../hui/static/h-ui/css/H-ui.min.css" />
+<link rel="stylesheet" type="text/css" href="../hui/static/h-ui.admin/css/H-ui.admin.css" />
+<link rel="stylesheet" type="text/css" href="../hui/lib/Hui-iconfont/1.0.8/iconfont.css" />
+<link rel="stylesheet" type="text/css" href="../hui/static/h-ui.admin/skin/default/skin.css" id="skin" />
+<link rel="stylesheet" type="text/css" href="../hui/static/h-ui.admin/css/style.css" />
+<!--[if IE 6]>
+<script type="text/javascript" src="../hui/lib/DD_belatedPNG_0.0.8a-min.js" ></script>
+<script>DD_belatedPNG.fix('*');</script>
+<![endif]-->
+<title>用户管理</title>
+</head>
+<body>
+<nav class="breadcrumb"><i class="Hui-iconfont">&#xe67f;</i> 首页 <span class="c-gray en">&gt;</span> 管理员管理 <span class="c-gray en">&gt;</span> 用户管理 <a class="btn btn-success radius r" style="line-height:1.6em;margin-top:3px" href="javascript:location.replace(location.href);" title="刷新" ><i class="Hui-iconfont">&#xe68f;</i></a></nav>
+<div class="page-container">
+	<div class="cl pd-5 bg-1 bk-gray"> <span class="l"> <a  href="javascript:;" onclick="datadel()" class="btn btn-danger radius btn_delete"><i class="Hui-iconfont">&#xe6e2;</i> 批量删除</a> <a  class="btn btn-primary radius btn_add" href="javascript:;" onclick="admin_role_add(this,'添加用户','authority-user-add.do','800')"><i class="Hui-iconfont">&#xe600;</i> 用户添加</a> </span> <span class="r">共有数据：<strong id="datanum"></strong> 条</span> </div>
+	<table class="table table-border table-bordered table-hover table-bg" id="table-role">
+		<thead>
+		<tr>
+			<th scope="col" colspan="6">用户管理</th>
+		</tr>
+		<tr class="text-c">
+			<th width="25"><input type="checkbox" value="" name=""></th>
+			<th width="40">ID</th>
+			<th width="200">用户民</th>
+			<th width="300">身份类型</th>
+			<th width="70">操作</th>
+		</tr>
+		</thead>
+		<tbody>
+		<!--数据模板-->
+		<!--其中td中id=xx就是对应实体类里面的属性-->
+		<tr class="text-c" id="template">
+			<td><input type="checkbox" value="" name=""></td>
+			<td id="id">1</td>
+			<td id="username">超级管理员</td>
+			<td id="type">拥有至高无上的权利</td>
+			<td class="f-14"><a title="编辑" class="btn_update" href="javascript:;" onclick="admin_role_edit(this,'用户编辑','authority-user-edit.do','1')" style="text-decoration:none"><i class="Hui-iconfont">&#xe6df;</i></a> <a title="删除"   href="javascript:;" onclick="admin_role_del(this)"  class="ml-5 btn_delete" style="text-decoration:none"><i class="Hui-iconfont">&#xe6e2;</i></a></td>
+		</tr>
+		</tbody>
+	</table>
+</div>
+<!--_footer 作为公共模版分离出去-->
+<script type="text/javascript" src="../hui/lib/jquery/1.9.1/jquery.min.js"></script>
+<script type="text/javascript" src="../hui/lib/layer/2.4/layer.js"></script>
+<script type="text/javascript" src="../hui/static/h-ui/js/H-ui.min.js"></script>
+<script type="text/javascript" src="../hui/static/h-ui.admin/js/H-ui.admin.js"></script> <!--/_footer 作为公共模版分离出去-->
+
+<!--请在下方写此页面业务相关的脚本-->
+<script type="text/javascript" src="../hui/lib/datatables/1.10.0/jquery.dataTables.min.js"></script>
+<script type="text/javascript">
+/*管理员-角色-添加*/
+function admin_role_add(obj,title,url,w,h){
+
+	layer_show(title,url,w,h);
+
+
+}
+/*管理员-角色-编辑*/
+function admin_role_edit(obj,title,url,id,w,h){
+	var role_id = $(obj).parents(".text-c").find("#id").text();
+	url = url+"?id="+role_id;
+	layer_show(title,url,w,h);
+}
+/*管理员-角色-删除*/
+function admin_role_del(obj){
+	layer.confirm('用户删除须谨慎，确认要删除吗？',function(index){
+		var role_id = $(obj).parents(".text-c").find("#id").text();
+		var ids=[role_id];
+		$.ajax({
+			type: 'GET',
+			data: {"ids":ids.join(",")},
+			url: '../authority/authority-user-delete.do',
+			dataType: 'json',
+			contentType:'application/json',
+			success: function(data){
+				layer.msg('已删除!',{icon:1,time:1000});
+				location.replace(location.href);
+			},
+			error:function(data) {
+				layer.msg('删除失败!',{icon:1,time:1000});
+				location.replace(location.href);
+			}
+		});
+
+	});
+}
+function datadel(){
+
+	layer.confirm('用户删除须谨慎，确认要删除吗？',function(index){
+		var ids=[];
+		$("#table-role  tbody  :checkbox:checked").each(
+				function (i,item) {
+					ids[i]=$(this).parents(".text-c").find("#id").text();
+				}
+		);
+		console.log("ids"+ids);
+		$.ajax({
+			type: 'GET',
+			url: '../authority/authority-user-delete.do',
+			data: {"ids":ids.join(",")},
+			dataType: 'json',
+			contentType:'application/json',
+			success: function(data){
+				layer.msg('已删除!',{icon:1,time:1000});
+				location.replace(location.href)
+			},
+			error:function(data) {
+				layer.msg('删除失败!',{icon:1,time:1000});
+				location.replace(location.href)
+			}
+		});
+
+	});
+}
+$(function() {
+	/**
+	 * 加载角色数据
+	 */
+	loadData();
+	loadBtn();
+});
+function loadData() {
+	$.ajax({
+		url: '../authority/authority-user.do',
+		type: 'Post',
+		data: {"id":0},
+		dataType: 'json',
+		contentType:'application/json',
+		success: function(data) {
+			// 利用模板进行数据填充
+			// 关键点: 克隆模板
+			$.each(data, function(i, v) {
+				var row = $("#template").clone(true); // 克隆模板，同时注意事件监听失效
+				for(attr in v) {
+					row.find("#" + attr).html(v[attr]); // 数据的复制
+				}
+				$("#table-role > tbody").append(row); // 将数据添加到表格里面
+			});
+			$("#table-role > tbody > tr:eq(0)").remove(); // 删除模板
+		},
+		error: function() {
+			layer.msg('数据加载失败...', {icon:1,time:2000});
+		}
+	})
+}
+//按钮集权限
+function loadBtn() {
+	$.ajax({
+		url: '../authority/authority-btn.do',
+		type: 'GET',
+		data: {"pid":21},
+		dataType: 'json',
+		contentType:'application/json',
+		success: function(data) {
+			console.log(data);
+			if (!find(data,"用户添加")) {
+				$(".btn_add").remove();
+			}
+			if (!find(data,"用户修改")) {
+				$(".btn_update").remove();
+			}
+			if (!find(data,"用户删除")) {
+				$(".btn_delete").remove();
+			}
+		},
+		error: function() {
+			layer.msg('数据加载失败...', {icon:1,time:2000});
+		}
+
+	})
+}
+function find(data,str) {
+	var flag=false;
+	$.each(data,function (i,item) {
+		if (item.name==str){
+			console.log(item.name);
+			flag=true;
+		}
+	});
+	return flag;
+}
+</script>
+</body>
+</html>

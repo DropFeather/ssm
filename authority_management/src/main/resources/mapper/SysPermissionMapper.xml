@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zy.dao.SysPermissionDao">
+
+	<select id="getSysPermission" resultType="SysPermission" parameterType="Integer">
+		SELECT
+        id,
+        NAME,
+        url,
+        parentid,
+        CASE WHEN IFNULL(LOCATE('query', percode),-1) > 0 THEN '查询权限'
+        WHEN IFNULL(LOCATE('create', percode),-1) > 0 THEN '添加权限'
+        WHEN IFNULL(LOCATE('update', percode),-1) > 0 THEN '修改权限'
+        WHEN IFNULL(LOCATE('delete', percode),-1) > 0 THEN '删除权限'
+        ELSE '其他' END percode,
+        CASE available WHEN 1 THEN '开启' ELSE '锁定' END available
+        FROM sys_permission
+          <where>
+			  <if test="id != 0">
+				and  id = #{id,jdbcType=INTEGER}
+			  </if>
+			  <if test="permission_name != null and permission_name != ''">
+				  and name = #{permission_name,jdbcType=VARCHAR}
+			  </if>
+		  </where>
+
+
+	</select>
+
+	<select id="getSysPermissionTree" resultType="Map">
+		SELECT id, name, parentid pId FROM sys_permission
+	</select>
+	
+	<select id="getSysPermissionTreeByRoleId" parameterType="String" resultType="Map">
+		SELECT sys_permission.id, sys_permission.name, sys_permission.parentid pId,
+		CASE WHEN IFNULL(sys_permission_id,-1) > 0 THEN 'true' ELSE 'false' END checked 
+		FROM sys_permission LEFT JOIN sys_role_permission
+		ON sys_permission.id = sys_role_permission.sys_permission_id
+		AND sys_role_permission.sys_role_id = #{role_id}
+	</select>
+	<select id="getSysPermissionMenu" resultType="com.zy.model.SysPermission">
+		SELECT sys_permission.id as id,name,type,url,percode,parentid FROM sys_user, sys_user_role, sys_role_permission, sys_permission
+		WHERE sys_user.id = sys_user_role.sys_user_id
+		  AND sys_user_role.sys_role_id = sys_role_permission.sys_role_id
+		  AND sys_role_permission.sys_permission_id = sys_permission.id
+		  AND type = 'menu'
+		  AND usercode = #{user.usercode,jdbcType=VARCHAR}
+	</select>
+	<select id="getSysPermissionSecondMenu" resultType="com.zy.model.SysPermission">
+		SELECT sys_permission.id as id,name,type,url,percode,parentid FROM sys_user, sys_user_role, sys_role_permission, sys_permission
+		WHERE sys_user.id = sys_user_role.sys_user_id
+		  AND sys_user_role.sys_role_id = sys_role_permission.sys_role_id
+		  AND sys_role_permission.sys_permission_id = sys_permission.id
+		  AND type = 'secondmenu'
+		  AND parentid = #{parentid,jdbcType=VARCHAR}
+		  AND usercode = #{user.usercode,jdbcType=VARCHAR}
+	</select>
+	<delete id="deletePermissionByRoleId" parameterType="String">
+		delete from sys_role_permission where sys_role_id = #{role_id}
+	</delete>
+	<delete id="deletePermissionByPermissionId" parameterType="String">
+		delete from sys_role_permission where sys_permission_id = #{sys_permission_id}
+	</delete>
+	<insert id="setPermissionBatch" >
+		insert into sys_role_permission(sys_role_id,sys_permission_id) values
+		<foreach collection="param2" item="permissionId" separator=",">
+			(#{param1,jdbcType=VARCHAR} ,#{permissionId,jdbcType=VARCHAR} )
+		</foreach>
+	</insert>
+	<insert id="addPermission" parameterType="com.zy.model.SysPermission">
+		insert into sys_permission(name, type, url, percode, parentid, available)
+		values (#{name},#{type},#{url},#{percode},#{parentid},1)
+	</insert>
+	<update id="updatePermissionById" parameterType="com.zy.model.SysPermission">
+		update sys_permission
+		<set>
+			<if test="name != null and name != ''">
+				name=#{name,jdbcType=VARCHAR} ,
+			</if>
+			<if test="type != null and type != ''">
+				type=#{type,jdbcType=VARCHAR} ,
+			</if>
+			<if test="url != null and url != ''">
+				url=#{url,jdbcType=VARCHAR} ,
+			</if>
+			<if test="percode != null and percode != ''">
+				percode=#{percode,jdbcType=VARCHAR} ,
+			</if>
+			<if test="parentid != null and parentid != ''">
+				parentid=#{parentid,jdbcType=VARCHAR} ,
+			</if>
+			<if test="available != null and available != ''">
+				available=#{available} ,
+			</if>
+		</set>
+		<where>
+			id=#{id}
+		</where>
+	</update>
+	<delete id="deletePermissionById">
+		delete  from sys_permission where id=#{id}
+	</delete>
+    <select id="getSysPermissionVo" resultType="SysPermission">
+        SELECT
+        id,
+        NAME,
+        url,
+        parentid,
+        CASE WHEN IFNULL(LOCATE('query', percode),-1) > 0 THEN '查询权限'
+        WHEN IFNULL(LOCATE('create', percode),-1) > 0 THEN '添加权限'
+        WHEN IFNULL(LOCATE('update', percode),-1) > 0 THEN '修改权限'
+        WHEN IFNULL(LOCATE('delete', percode),-1) > 0 THEN '删除权限'
+        ELSE '其他' END percode,
+        CASE available WHEN 1 THEN '开启' ELSE '锁定' END available
+        FROM sys_permission
+        <where>
+            <if test="pid != null and pid != ''">
+               and parentid=#{pid,jdbcType=VARCHAR}
+            </if>
+        </where>
+    </select>
+	<select id="getSysPermissionbyPid" resultType="SysPermission">
+		select sp.* from sys_permission sp inner join sys_role_permission srp
+		on sp.id = srp.sys_permission_id inner join sys_user_role sur
+		on sur.sys_role_id=srp.sys_role_id where sp.parentid=#{pid,jdbcType=VARCHAR}  and sur.sys_user_id=#{uid,jdbcType=VARCHAR}
+	</select>
+</mapper>
