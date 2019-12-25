@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zy.mapper.ScoreMapper">
+  <resultMap id="BaseResultMap" type="com.zy.model.Score">
+    <!--@mbg.generated generated on Tue Dec 24 23:38:52 CST 2019.-->
+    <id column="id" property="id" />
+    <result column="sid" property="sid" />
+    <result column="cid" property="cid" />
+    <result column="grade" property="grade" />
+  </resultMap>
+  <sql id="Example_Where_Clause">
+    <!--@mbg.generated generated on Tue Dec 24 23:38:52 CST 2019.-->
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause">
+    <!--@mbg.generated generated on Tue Dec 24 23:38:52 CST 2019.-->
+    <where>
+      <foreach collection="example.oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated generated on Tue Dec 24 23:38:52 CST 2019.-->
+    id, sid, cid, grade
+  </sql>
+  <select id="selectByExample" parameterType="com.zy.model.ScoreExample" resultMap="BaseResultMap">
+    <!--@mbg.generated generated on Tue Dec 24 23:38:52 CST 2019.-->
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from score
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+  </select>
+  <delete id="deleteByExample" parameterType="com.zy.model.ScoreExample">
+    <!--@mbg.generated generated on Tue Dec 24 23:38:52 CST 2019.-->
+    delete from score
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <select id="countByExample" parameterType="com.zy.model.ScoreExample" resultType="java.lang.Long">
+    <!--@mbg.generated generated on Tue Dec 24 23:38:52 CST 2019.-->
+    select count(*) from score
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map">
+    <!--@mbg.generated generated on Tue Dec 24 23:38:52 CST 2019.-->
+    update score
+    <set>
+      <if test="record.id != null">
+        id = #{record.id},
+      </if>
+      <if test="record.sid != null">
+        sid = #{record.sid},
+      </if>
+      <if test="record.cid != null">
+        cid = #{record.cid},
+      </if>
+      <if test="record.grade != null">
+        grade = #{record.grade},
+      </if>
+    </set>
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map">
+    <!--@mbg.generated generated on Tue Dec 24 23:38:52 CST 2019.-->
+    update score
+    set id = #{record.id},
+      sid = #{record.sid},
+      cid = #{record.cid},
+      grade = #{record.grade}
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+</mapper>
