@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/mvc
+        http://www.springframework.org/schema/mvc/spring-mvc.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd">
+    <!--开启注解扫描，只扫描Controller注解-->
+    <context:component-scan base-package="com.zy">
+        <context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+
+    <!--过滤静态资源-->
+    <!-- 在配置DispatcherServlet的时候，如果映射路径是 '/' -->
+    <!-- DispatcherServlet会拦截到所有请求（Controller请求，资源文件的请求） -->
+    <!-- 静态资源 -->
+    <mvc:resources mapping="/static/**" location="/static/" />
+    <mvc:resources mapping="swagger-ui.html" location="classpath:/META-INF/resources/" />
+    <mvc:resources mapping="/webjars/**" location="classpath:/META-INF/resources/webjars/" />
+
+
+    <!-- springmvc关键流程：请求成功后会做出响应，则我们需要配置响应的方式 -->
+    <!-- 响应方式：视图，Ajax -->
+    <!-- 如果当前的这个响应方式是需要用视图层现出来，则需要配置一个叫视图解析器 -->
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/views/"></property>
+        <property name="suffix" value=".jsp"></property>
+    </bean>
+
+    <!-- 上传文件的视图解析器 CommonsMultipartResolver -->
+    <!--<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">-->
+        <!--<property name="maxUploadSize" value="5242880"></property>-->
+        <!--<property name="maxInMemorySize" value="4096"></property>-->
+        <!--<property name="defaultEncoding" value="UTF-8"></property>-->
+    <!--</bean>-->
+
+    <!-- 拦截器的配置 -->
+    <!--<mvc:interceptors>-->
+        <!--<mvc:interceptor>-->
+            <!--<mvc:mapping path="/**"/>-->
+            <!--<mvc:exclude-mapping path="/authuser/login.do"/>-->
+            <!--<bean class="com.zlt.interceptor.AuthInterceptor"></bean>-->
+        <!--</mvc:interceptor>-->
+    <!--</mvc:interceptors>-->
+
+    <mvc:annotation-driven/>
+    <bean class="com.zy.util.SwaggerConfig"/>
+</beans>
